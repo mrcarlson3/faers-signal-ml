@@ -89,7 +89,7 @@ def build_clinical_features(db_path, output_dir):
     con.close()
 
 if __name__ == "__main__":
-    DB_PATH = './data/faers_ml.duckdb'
+    DB_PATH = 'faers_ml.duckdb'
     OUTPUT_DIR = './data/features'
     
     try:

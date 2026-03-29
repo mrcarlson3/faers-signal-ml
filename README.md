@@ -72,7 +72,8 @@ By adjusting for missingness and class imbalance, and incorporating polypharmacy
 
 ## Metadata
 **ER Diagram:**
-![ER Diagram]([Insert_Path_To_ER_Diagram_Image.png])
+![ER Diagram]([ER_Diagram.png])
+
 
 **Data Table List:**
 The resulting structural tables inside DuckDB, exported as Parquet format:
