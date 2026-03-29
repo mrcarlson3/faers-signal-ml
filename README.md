@@ -58,10 +58,10 @@ Data originates completely from the FDA through direct bulk downloads via the op
 **Code Provenance Table:**
 | Script | Description |
 |--------|-------------|
-| `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives from FDA endpoints. |
-| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. |
-| `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. |
-| `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. |
+| `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives from FDA endpoints. | https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_bulk_download.py |
+| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. | https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_ingestion.py |
+| `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. | https://github.com/mrcarlson3/faers-signal-ml/blob/main/02_duckdb_schema.sql |
+| `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. | https://github.com/mrcarlson3/faers-signal-ml/blob/main/03_feature_engineering.py |
 
 **Bias Identification:**
 Spontaneous passive reporting systems universally face immense biases, notably drastic under-reporting, missing demographic data, and "confounding by indication" (sicker patients take more drugs and thus experience more adverse events). Furthermore, missing data is not missing at random; severe outcomes are more likely to have complete reporting data than minor events.
