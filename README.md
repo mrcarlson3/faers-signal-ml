@@ -3,24 +3,21 @@
 **Executive Summary**
 This project provides a robust, local data ingestion and processing pipeline for the FDA Adverse Event Reporting System (FAERS), enabling scalable machine-learning-driven signal detection. By automating bulk data pulls, organizing the findings into a relational DuckDB database, and exporting engineered clinical features, we predict severe patient outcomes based on demographic and polypharmacy risk factors.
 
-**Name:** Michael
-**NetID:** [Insert NetID Here]
-**DOI:** [Insert DOI Here]
+| Project Identity | Resource Links |
+| :--- | :--- |
+| **Name:** Michael Carlson | [Press Release File](press_release.md) |
+| **NetID:** mjy7nw | [UVA OneDrive Data Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b) |
+| **DOI:** [Insert DOI Badge Here] | [Pipeline Notebook](pipeline.ipynb) |
+| **License:** [MIT](LICENSE) | [Pipeline Markdown](pipeline.md) |
 
-**Links:**
-- [Press Release File](press_release.md)
-- [UVA OneDrive Data Directory]([Insert_UVA_OneDrive_Link_Here])
-- [Pipeline Notebook](pipeline.ipynb)
-- [Pipeline Markdown](pipeline.md)
-- [License Information](LICENSE)
 
 ## Problem Definition
-**General Problem:** 8. Clinical drug trials (Post-market pharmacovigilance)
+**General Problem:** 8. Clinical drug trials
 **Specific Problem Statement:** While general ADRs affect the whole population, specific drug classes drive the vast majority of severe hospitalizations. Grounded in clinical literature, we aim to predict severe outcomes specifically for patients where **Warfarin** or **NSAIDs** (e.g., Ibuprofen) are the primary suspect drugs, evaluating how demographic vulnerability and polypharmacy exacerbate their known toxicity.
 **Rationale:** Refining the problem from general drug safety to specific high-risk cohorts allows for much higher precision triage. Furthermore, Pirmohamed et al. established that warfarin and NSAIDs are the most common drivers of ADR-related hospital admissions. Schreier et al. demonstrated that isolating the specific drug name is the most critical feature for improving ML precision in FAERS data. 
 **Motivation:** By constraining the model to high-risk drugs, the "polypharmacy" feature stops acting as a noisy metric and transforms into a direct mathematical proxy for severe drug-drug interactions. This allows regulators to prioritize life-threatening cases for these ubiquitous drugs before they overwhelm hospital systems.
 **Headline:** AI System Trained on FDA Reports Predicts Life-Threatening NSAID and Warfarin Reactions
-**Link to Press Release:** [Read our Press Release here](press_release.md)
+**Link to Press Release:** [Read Press Release here](press_release.md)
 
 ## Domain Exposition
 **Terminology Table:**
@@ -52,23 +49,23 @@ This project sits at the intersection of public health informatics, regulatory s
 | Adverse drug reactions as cause of admission to hospital: prospective analysis (Pirmohamed et al., 2004) | Foundational study establishing that 6.5% of hospital admissions are caused by ADRs, carrying a massive projected financial and mortality burden. | [PDF Link](https://drive.google.com/file/d/1BcUlC1J5Nf5VDaPOnqFCs3Kk4RCNwmyS/view?usp=drive_link) |
 
 ## Data Creation
-**Provenance:**
-Data originates completely from the FDA through direct bulk downloads via the openFDA manifest, capturing historical JSON partitions, which are then flattened into NDJSON and loaded into DuckDB.
+
+> ### 🛠 Data Provenance & Reproducibility
+> All data is pulled directly from the **OpenFDA API** using `01_faers_bulk_download.py`. The pipeline is designed to be **idempotent**; running the ingestion scripts will refresh the local `faers_ml.duckdb` without duplicating records. All engineered artifacts are stored in the [UVA OneDrive Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b) to ensure persistent access and auditability.
 
 **Code Provenance Table:**
-| Script | Description |
-|--------|-------------|
-| `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives from FDA endpoints. |
-| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. |
-| `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. |
-| `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. |
+| Script | Description | Link |
+|--------|-------------|------|
+| `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_bulk_download.py) |
+| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_ingestion.py) |
+| `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/02_duckdb_schema.sql) |
+| `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/03_feature_engineering.py) |
 
 **Bias Identification:**
-Spontaneous passive reporting systems universally face immense biases, notably drastic under-reporting, missing demographic data, and "confounding by indication" (sicker patients take more drugs and thus experience more adverse events). Furthermore, missing data is not missing at random; severe outcomes are more likely to have complete reporting data than minor events.
-**Bias Mitigation:**
-We strictly filter for records with complete demographic data. To address confounding by indication, we engineered `polypharmacy_count` as a mathematical proxy for underlying health complexity. To account for extreme class imbalance (severe outcomes are rare), our ML pipeline utilizes stratified sampling (`stratify=y`) and balanced class weights during training.
-**Rationale:**
-By adjusting for missingness and class imbalance, and incorporating polypharmacy context, the ML model processes trends denoting true physiological risks rather than simply mapping raw reporting volume or dataset skews.
+Spontaneous passive reporting systems face immense biases, notably drastic under-reporting and "confounding by indication" (sicker patients take more drugs and experience more adverse events). Missing data is not missing at random; severe outcomes are more likely to have complete reporting data than minor events.
+
+> ### ⚖️ Analytic Rigor: Bias Mitigation
+> To address the **masking effects** inherent in FAERS, we utilize `balanced_subsample` class weighting, which adjusts weights at the bootstrap level to ensure rare severe signals are not drowned out by non-serious reports. Furthermore, we use **Stratified Sampling** to ensure the rare outcome distribution is preserved across training and testing splits.
 
 ## Metadata
 **ER Diagram:**
