@@ -3,24 +3,24 @@
 **Executive Summary**
 This project provides a robust, local data ingestion and processing pipeline for the FDA Adverse Event Reporting System (FAERS), enabling scalable machine-learning-driven signal detection. By automating bulk data pulls, organizing the findings into a relational DuckDB database, and exporting engineered clinical features, we predict severe patient outcomes based on demographic and polypharmacy risk factors.
 
-**Name:** Michael
-**NetID:** [Insert NetID Here]
+**Name:** Michael Carlson
+**NetID:** mjy7nw
 **DOI:** [Insert DOI Here]
 
 **Links:**
 - [Press Release File](press_release.md)
-- [UVA OneDrive Data Directory]([Insert_UVA_OneDrive_Link_Here])
+- [UVA OneDrive Data Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b)
 - [Pipeline Notebook](pipeline.ipynb)
 - [Pipeline Markdown](pipeline.md)
 - [License Information](LICENSE)
 
 ## Problem Definition
-**General Problem:** 8. Clinical drug trials (Post-market pharmacovigilance)
+**General Problem:** 8. Clinical drug trials
 **Specific Problem Statement:** While general ADRs affect the whole population, specific drug classes drive the vast majority of severe hospitalizations. Grounded in clinical literature, we aim to predict severe outcomes specifically for patients where **Warfarin** or **NSAIDs** (e.g., Ibuprofen) are the primary suspect drugs, evaluating how demographic vulnerability and polypharmacy exacerbate their known toxicity.
 **Rationale:** Refining the problem from general drug safety to specific high-risk cohorts allows for much higher precision triage. Furthermore, Pirmohamed et al. established that warfarin and NSAIDs are the most common drivers of ADR-related hospital admissions. Schreier et al. demonstrated that isolating the specific drug name is the most critical feature for improving ML precision in FAERS data. 
 **Motivation:** By constraining the model to high-risk drugs, the "polypharmacy" feature stops acting as a noisy metric and transforms into a direct mathematical proxy for severe drug-drug interactions. This allows regulators to prioritize life-threatening cases for these ubiquitous drugs before they overwhelm hospital systems.
 **Headline:** AI System Trained on FDA Reports Predicts Life-Threatening NSAID and Warfarin Reactions
-**Link to Press Release:** [Read our Press Release here](press_release.md)
+**Link to Press Release:** [Read Press Release here](press_release.md)
 
 ## Domain Exposition
 **Terminology Table:**
