@@ -2,3 +2,7 @@
 *.json 
 *.duckdb
 *.csv
+.DS_Store
+*.parquet
+*.log
+__pycache__

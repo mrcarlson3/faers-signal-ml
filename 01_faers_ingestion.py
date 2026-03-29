@@ -1,35 +1,12 @@
-import requests
 import json
 import logging
+import os
+import glob
 
 logging.basicConfig(level=logging.INFO)
 
-def fetch_faers_data(limit=1000):
-    """
-    Queries the openFDA API and retrieves nested JSON historical reports.
-    """
-    logging.info(f"Fetching {limit} reports from openFDA...")
-    url = f"https://api.fda.gov/drug/event.json?limit={limit}"
-    response = requests.get(url)
-    response.raise_for_status()
-    
-    return response.json().get('results', [])
-
-def parse_and_flatten(results):
-    """
-    Parses nested JSON historical reports into flat lists of dictionaries 
-    representing the four entities for our DuckDB relational model.
-    """
-    logging.info("Flattening FAERS JSON payload into relational entities...")
-    
-    reports = []
-    drugs = []
-    reactions = []
-    outcomes = []
-    
-    drug_pk_counter = 1
-    reaction_pk_counter = 1
-    outcome_pk_counter = 1
+def parse_and_flatten(results, drug_pk_counter, reaction_pk_counter, outcome_pk_counter):
+    reports, drugs, reactions, outcomes = [], [], [], []
 
     for row in results:
         # Standardize primary key 
@@ -37,37 +14,29 @@ def parse_and_flatten(results):
         if report_id == 'UNKNOWN':
             continue
             
-        # 1. Extract Report level data
         patient = row.get('patient', {})
         age = patient.get('patientonsetage', None)
-        # Attempt to cast age to float if possible
-        try:
-            age = float(age) if age else None
-        except ValueError:
-            age = None
+        try: age = float(age) if age else None
+        except ValueError: age = None
             
         sex = patient.get('patientsex', None)
-        try:
-            sex = int(sex) if sex else None
-        except ValueError:
-            sex = None
+        try: sex = int(sex) if sex else None
+        except ValueError: sex = None
             
         reports.append({
             'report_id': report_id,
             'receive_date': row.get('receivedate', None),
             'patient_age': age,
             'patient_sex': sex,
-            'serious': row.get('serious', None)  # Pre-feature engineering value
+            'serious': row.get('serious', None)
         })
         
-        # 2. Extract Drug level data
         patient_drugs = patient.get('drug', [])
+        if isinstance(patient_drugs, dict): patient_drugs = [patient_drugs] # Handle rare case
         for d in patient_drugs:
             char = d.get('drugcharacterization', None)
-            try:
-                char = int(char) if char else None
-            except ValueError:
-                char = None
+            try: char = int(char) if char else None
+            except ValueError: char = None
                 
             drugs.append({
                 'drug_id': drug_pk_counter,
@@ -77,8 +46,8 @@ def parse_and_flatten(results):
             })
             drug_pk_counter += 1
             
-        # 3. Extract Reaction (MedDRA) level data
         patient_reactions = patient.get('reaction', [])
+        if isinstance(patient_reactions, dict): patient_reactions = [patient_reactions]
         for r in patient_reactions:
             reactions.append({
                 'reaction_id': reaction_pk_counter,
@@ -87,8 +56,7 @@ def parse_and_flatten(results):
             })
             reaction_pk_counter += 1
             
-        # 4. Extract Outcomes (Simulated mapping from top-level seriousness fields)
-        # In actual FAERS data, multiple seriousness flags can exist natively.
+        # 4. Extract Outcomes 
         outcome_flags = [
             ('seriousnessdeath', 'DEATH'),
             ('seriousnesshospitalization', 'HOSPITALIZATION'),
@@ -98,7 +66,7 @@ def parse_and_flatten(results):
         
         for flag, code in outcome_flags:
             val = row.get(flag, None)
-            if val == '1': # 1 indicates the outcome occurred
+            if val == '1':
                 outcomes.append({
                     'outcome_id': outcome_pk_counter,
                     'report_id': report_id,
@@ -106,19 +74,54 @@ def parse_and_flatten(results):
                 })
                 outcome_pk_counter += 1
 
-    return reports, drugs, reactions, outcomes
+    return reports, drugs, reactions, outcomes, drug_pk_counter, reaction_pk_counter, outcome_pk_counter
 
-def save_to_json(data, filename):
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=2)
+def append_to_ndjson(data, filename):
+    with open(filename, 'a', encoding='utf-8') as f:
+        for item in data:
+            f.write(json.dumps(item) + '\n')
 
 if __name__ == "__main__":
-    faers_results = fetch_faers_data(limit=100) # Small limit for proof of concept
-    flat_reports, flat_drugs, flat_reactions, flat_outcomes = parse_and_flatten(faers_results)
+    RAW_DATA_DIR = './data'
     
-    save_to_json(flat_reports, 'raw_reports.json')
-    save_to_json(flat_drugs, 'raw_drugs.json')
-    save_to_json(flat_reactions, 'raw_reactions.json')
-    save_to_json(flat_outcomes, 'raw_outcomes.json')
-    
-    logging.info(f"Saved {len(flat_reports)} reports to raw JSON output ready for ingestion.")
+    # Reset output files to avoid duplications on re-run
+    output_files = ['raw_reports.json', 'raw_drugs.json', 'raw_reactions.json', 'raw_outcomes.json']
+    for f in output_files:
+        if os.path.exists(f):
+            os.remove(f)
+
+    json_files = glob.glob(os.path.join(RAW_DATA_DIR, '*.json'))
+    logging.info(f"Found {len(json_files)} extracted JSON partitions in {RAW_DATA_DIR}.")
+
+    drug_pk_counter = 1
+    reaction_pk_counter = 1
+    outcome_pk_counter = 1
+    total_reports = 0
+
+    for idx, filepath in enumerate(json_files):
+        try:
+            logging.info(f"Processing partition {idx+1}/{len(json_files)}: {os.path.basename(filepath)}")
+            with open(filepath, 'r', encoding='utf-8') as f:
+                payload = json.load(f)
+            
+            results = payload.get('results', [])
+            if not results:
+                continue
+
+            # Process and flatten
+            flat_reports, flat_drugs, flat_reactions, flat_outcomes, \
+            drug_pk_counter, reaction_pk_counter, outcome_pk_counter = \
+                parse_and_flatten(results, drug_pk_counter, reaction_pk_counter, outcome_pk_counter)
+            
+            total_reports += len(flat_reports)
+
+            # Append to NDJSON iteratively to preserve memory
+            append_to_ndjson(flat_reports, 'raw_reports.json')
+            append_to_ndjson(flat_drugs, 'raw_drugs.json')
+            append_to_ndjson(flat_reactions, 'raw_reactions.json')
+            append_to_ndjson(flat_outcomes, 'raw_outcomes.json')
+            
+        except Exception as e:
+            logging.error(f"Error processing {filepath}: {e}")
+
+    logging.info(f"Successfully processed and flattened {total_reports} reports into NDJSON format.")

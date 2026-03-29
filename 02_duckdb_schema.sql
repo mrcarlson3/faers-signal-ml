@@ -61,3 +61,10 @@ SELECT * FROM read_json_auto('raw_reactions.json');
 
 INSERT INTO faers_outcomes
 SELECT * FROM read_json_auto('raw_outcomes.json');
+
+-- Export tables to Parquet files for efficient downstream reading
+COPY faers_reports TO 'faers_reports.parquet' (FORMAT PARQUET);
+COPY faers_drugs TO 'faers_drugs.parquet' (FORMAT PARQUET);
+COPY faers_reactions TO 'faers_reactions.parquet' (FORMAT PARQUET);
+COPY faers_outcomes TO 'faers_outcomes.parquet' (FORMAT PARQUET);
+
