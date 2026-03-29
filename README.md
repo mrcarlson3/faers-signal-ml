@@ -69,7 +69,7 @@ Spontaneous passive reporting systems face immense biases, notably drastic under
 
 ## Metadata
 **ER Diagram:**
-![ER Diagram]([ER_Diagram.png])
+![ER Diagram](ER_Diagram.png)
 
 
 **Data Table List:**
