@@ -10,12 +10,6 @@ This project provides a robust, local data ingestion and processing pipeline for
 | **DOI:** [Insert DOI Badge Here] | [Pipeline Notebook](pipeline.ipynb) |
 | **License:** [MIT](LICENSE) | [Pipeline Markdown](pipeline.md) |
 
-**Links:**
-- [Press Release File](press_release.md)
-- [UVA OneDrive Data Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b)
-- [Pipeline Notebook](pipeline.ipynb)
-- [Pipeline Markdown](pipeline.md)
-- [License Information](LICENSE)
 
 ## Problem Definition
 **General Problem:** 8. Clinical drug trials
