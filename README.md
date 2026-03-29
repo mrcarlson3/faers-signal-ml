@@ -57,6 +57,7 @@ This project sits at the intersection of public health informatics, regulatory s
 | Script | Description | Link |
 |--------|-------------|------|
 | `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_bulk_download.py) |
+| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_ingestion.py) |
 | `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/02_duckdb_schema.sql) |
 | `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. | [GitHub](https://github.com/mrcarlson3/faers-signal-ml/blob/main/03_feature_engineering.py) |
 
