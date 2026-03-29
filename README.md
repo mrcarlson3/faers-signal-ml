@@ -59,7 +59,7 @@ Data originates completely from the FDA through direct bulk downloads via the op
 | Script | Description |
 |--------|-------------|
 | `01_faers_bulk_download.py` | Retrieves and stages raw FAERS JSON archives from FDA endpoints. | [Link](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_bulk_download.py) |
-| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. | ([Link]https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_ingestion.py) |
+| `01_faers_ingestion.py` | Flattens nested JSON hierarchies into relational NDJSON files. | [Link](https://github.com/mrcarlson3/faers-signal-ml/blob/main/01_faers_ingestion.py) |
 | `02_duckdb_schema.sql` | Establishes the relational schema and ingests data into `faers_ml.duckdb`. | [Link](https://github.com/mrcarlson3/faers-signal-ml/blob/main/02_duckdb_schema.sql) |
 | `03_feature_engineering.py` | Executes CTEs to build clinical proxy features and exports to Parquet. | [Link](https://github.com/mrcarlson3/faers-signal-ml/blob/main/03_feature_engineering.py) |
 
