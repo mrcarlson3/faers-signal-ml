@@ -1,8 +1,24 @@
-.venv
-*.json 
+# Prevent uploading the 5GB+ raw and processed datasets to GitHub
+data/
 *.duckdb
-*.csv
-.DS_Store
-*.parquet
+*.duckdb.wal
+
+# Ignore pipeline execution logs to maintain a clean commit history
 *.log
-__pycache__
+logs/
+# Exclude local Python environments and compiled bytecode
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+venv/
+.venv
+.env
+
+# Ignore OS-specific hidden metadata files
+.DS_Store
+Thumbs.db
+
+#excess data
+*.csv
+*.parquet
+*.json

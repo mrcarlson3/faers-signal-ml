@@ -1,4 +1,9 @@
 requests
-pandas
+urllib3
 duckdb
+pandas
+scikit-learn
+matplotlib
+seaborn
+pyarrow
 
