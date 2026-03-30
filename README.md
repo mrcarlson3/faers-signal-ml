@@ -13,10 +13,10 @@ This project provides a robust, local data ingestion and processing pipeline for
 
 ## Problem Definition
 **General Problem:** 8. Clinical drug trials
-**Specific Problem Statement:** While general ADRs affect the whole population, specific drug classes drive the vast majority of severe hospitalizations. Grounded in clinical literature, we aim to predict severe outcomes specifically for patients where **Warfarin** or **NSAIDs** (e.g., Ibuprofen) are the primary suspect drugs, evaluating how demographic vulnerability and polypharmacy exacerbate their known toxicity.
-**Rationale:** Refining the problem from general drug safety to specific high-risk cohorts allows for much higher precision triage. Furthermore, Pirmohamed et al. established that warfarin and NSAIDs are the most common drivers of ADR-related hospital admissions. Schreier et al. demonstrated that isolating the specific drug name is the most critical feature for improving ML precision in FAERS data. 
-**Motivation:** By constraining the model to high-risk drugs, the "polypharmacy" feature stops acting as a noisy metric and transforms into a direct mathematical proxy for severe drug-drug interactions. This allows regulators to prioritize life-threatening cases for these ubiquitous drugs before they overwhelm hospital systems.
-**Headline:** AI System Trained on FDA Reports Predicts Life-Threatening NSAID and Warfarin Reactions
+**Specific Problem Statement:** Can we predict life-threatening adverse drug events across the entire FAERS population by combining a patient's demographic vulnerability, polypharmacy burden, and exposure to a deterministic registry of historically high-risk drug classes (e.g., NSAIDs, DOACs, Opioids)?
+**Rationale:** Pivoting from a narrow medical hypothesis (e.g., "Is Ibuprofen dangerous?") to a generalized Universal Triage Engine allows the model to learn the underlying systemic risk factors of a patient. Including drug identity as a binary clinical prior (`is_high_risk_drug`) merges mechanistic pharmacological ground-truth with population-level generalizability.
+**Motivation:** The FDA receives millions of post-market adverse event reports, creating an impossible manual review backlog. A high-precision triage engine that accurately flags severe hospitalizations allows regulators to prioritize life-threatening cases, overcoming the "alert fatigue" inherent in massive passive reporting systems.
+**Headline:** AI Universal Triage Engine Predicts Life-Threatening Adverse Drug Events
 **Link to Press Release:** [Read Press Release here](press_release.md)
 
 ## Domain Exposition
@@ -51,7 +51,7 @@ This project sits at the intersection of public health informatics, regulatory s
 ## Data Creation
 
 > ### 🛠 Data Provenance & Reproducibility
-> All data is pulled directly from the **OpenFDA API** using `01_faers_bulk_download.py`. The pipeline is designed to be **idempotent**; running the ingestion scripts will refresh the local `faers_ml.duckdb` without duplicating records. All engineered artifacts are stored in the [UVA OneDrive Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b) to ensure persistent access and auditability.
+> All data is pulled directly from the **OpenFDA API** using `01_faers_bulk_download.py`. The pipeline is designed to be **reproducible**; running the ingestion scripts will refresh the local `faers_ml.duckdb` without duplicating records. All engineered artifacts are stored in the [UVA OneDrive Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgDpgQQ1-uZ8TbiHbMXPD7xaAX6MqHnvhya5nWgsXy54iFU?e=Uaq5f2) to ensure persistent access and auditability.
 
 **Code Provenance Table:**
 | Script | Description | Link |
@@ -69,7 +69,7 @@ Spontaneous passive reporting systems face immense biases, notably drastic under
 
 ## Metadata
 **ER Diagram:**
-![ER Diagram](ER_Diagram.png)
+![ER Diagram](./images/ER_Diagram.png)
 
 
 **Data Table List:**

@@ -9,7 +9,9 @@ DROP TABLE IF EXISTS reports;
 CREATE TABLE reports (
     report_id VARCHAR PRIMARY KEY,
     receive_date DATE,
-    serious VARCHAR
+    serious VARCHAR,
+    reporter_type VARCHAR,
+    reporter_country VARCHAR
 );
 
 -- Isolate patient demographics to normalize the schema and prevent data duplication.
@@ -48,7 +50,9 @@ INSERT INTO reports
 SELECT 
     report_id,
     TRY_CAST(strptime(receive_date, '%Y%m%d') AS DATE),
-    serious
+    serious,
+    reporter_type,
+    reporter_country
 FROM read_json_auto('./data/ndjson/raw_reports.json');
 
 -- Age is cast to FLOAT to handle decimal representations common in pediatric reports.
