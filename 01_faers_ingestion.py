@@ -13,8 +13,6 @@ logging.basicConfig(
     handlers=[logging.FileHandler("logs/faers_pipeline.log"), logging.StreamHandler()]
 )
 
-# UPDATED: Map original outcome column names to standardized 2-letter FAERS codes.
-# This directly aligns with the 'DE', 'LT', 'HO' filters in our DuckDB feature engineering query.
 OUTCOME_MAPPING = {
     'seriousnessdeath': 'DE',
     'seriousnesslifethreatening': 'LT',
@@ -34,16 +32,16 @@ def parse_and_flatten(results):
         if report_id == 'UNKNOWN':
             continue
             
-        # We use 'or {}' to prevent crashes if 'primarysource' exists but is null
+        # use 'or {}' to prevent crashes if 'primarysource' exists but is null
         primary_source = row.get('primarysource') or {}
             
-        # Append report-level information including our new metadata features
+        # Append report-level information including metadata features
         reports.append({
             'report_id': report_id,
             'receive_date': row.get('receivedate'),
             'serious': row.get('serious'),
-            'reporter_type': primary_source.get('qualification'),    # Extracts 1=MD, 2=Pharm, 5=Consumer, etc.
-            'reporter_country': primary_source.get('reportercountry') # Extracts 'US', 'GB', etc.
+            'reporter_type': primary_source.get('qualification'),    
+            'reporter_country': primary_source.get('reportercountry') 
         })
 
         # Extract patient data safely
