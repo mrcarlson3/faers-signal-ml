@@ -7,7 +7,7 @@ This project provides an automated data pipeline to process the FDA Adverse Even
 | :--- | :--- |
 | **Name:** Michael Carlson | [Press Release File](press_release.md) |
 | **NetID:** mjy7nw | [UVA OneDrive Data Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgBN5u2lUrCQQp4yvMHYp_ykAWy9Ktwu-TP16ULtfDB8S9g?e=oAYx0b) |
-| **DOI:** [Insert DOI Badge Here] | [Pipeline Notebook](pipeline.ipynb) |
+| **DOI:** [![DOI](https://zenodo.org/badge/1188215308.svg)](https://doi.org/10.5281/zenodo.19355161)| [Pipeline Notebook](pipeline.ipynb) |
 | **License:** [MIT](LICENSE) | [Pipeline Markdown](pipeline.md) |
 
 
