@@ -1,7 +1,7 @@
-# DS 4320 Project 1: FAERS Pharmacovigilance Signal Detection
+# DS 4320 Project 1: FAERS Pharmacovigilance Serious Outcome Detection
 
 **Executive Summary**
-This project provides a robust, local data ingestion and processing pipeline for the FDA Adverse Event Reporting System (FAERS), enabling scalable machine-learning-driven signal detection. By automating bulk data pulls, organizing the findings into a relational DuckDB database, and exporting engineered clinical features, we predict severe patient outcomes based on demographic and polypharmacy risk factors.
+This project provides an automated data pipeline to process the FDA Adverse Event Reporting System (FAERS) database. By organizing millions of reports into a relational DuckDB database, a machine learning triage engine was built. This tool predicts severe patient outcomes (like hospitalization or death) based on age, the number of medications taken, and exposure to known high-risk drugs. This allows regulatory leads to prioritize the most dangerous cases immediately.
 
 | Project Identity | Resource Links |
 | :--- | :--- |
@@ -12,31 +12,32 @@ This project provides a robust, local data ingestion and processing pipeline for
 
 
 ## Problem Definition
-**General Problem:** 8. Clinical drug trials
-**Specific Problem Statement:** Can we predict life-threatening adverse drug events across the entire FAERS population by combining a patient's demographic vulnerability, polypharmacy burden, and exposure to a deterministic registry of historically high-risk drug classes (e.g., NSAIDs, DOACs, Opioids)?
-**Rationale:** Pivoting from a narrow medical hypothesis (e.g., "Is Ibuprofen dangerous?") to a generalized Universal Triage Engine allows the model to learn the underlying systemic risk factors of a patient. Including drug identity as a binary clinical prior (`is_high_risk_drug`) merges mechanistic pharmacological ground-truth with population-level generalizability.
-**Motivation:** The FDA receives millions of post-market adverse event reports, creating an impossible manual review backlog. A high-precision triage engine that accurately flags severe hospitalizations allows regulators to prioritize life-threatening cases, overcoming the "alert fatigue" inherent in massive passive reporting systems.
-**Headline:** AI Universal Triage Engine Predicts Life-Threatening Adverse Drug Events
-**Link to Press Release:** [Read Press Release here](press_release.md)
+**General Problem:** 8. Clinical drug trials and safety of drugs in post-market phase.
 
+**Specific Problem Statement:** Can we build a data-driven solution that identifies high-priority FDA adverse event reports across the entire population, regardless of the specific drug involved, by modeling the historical risk factors of patient age, polypharmacy burden, high risk drugs, and the person who reports it?
+
+**Rationale for Refinement:** Pivoting from a narrow medical hypothesis (e.g., "Is Ibuprofen dangerous?") to a data-driven model allows the model to learn the underlying systemic risk factors of a patient. Including drug identity as a binary clinical prior (`is_high_risk_drug`) merges mechanistic pharmacological ground-truth with population-level generalizability.
+
+**Motivation for the Project:** The FDA receives millions of voluntary adverse event reports over a decade, far exceeding the capacity of human regulatory analysts to review them in real-time. This severe bottleneck means that fatal drug-drug interactions or life-threatening geriatric responses can remain buried under thousands of minor, non-serious complaints like mild nausea. The motivation behind this project is to protect public health by drastically reducing the time-to-intervention; an automated triage engine ensures that regulatory leads can immediately focus their limited resources on the most critical, high-probability emergencies the moment they enter the system.
+
+**Press Release:** ** [ML Triage Revolutionizes FDA Drug Safety Monitoring](press_release.md)**
+
+---
 ## Domain Exposition
 **Terminology Table:**
 | Term | Definition |
-|------|------------|
-| ADR / ADE | Adverse Drug Reaction (harmful, unintended response to a normal dose) / Adverse Drug Event (broader; includes injuries from medication errors). |
-| FAERS | FDA Adverse Event Reporting System; the primary US repository for post-market drug safety intelligence. |
-| Pharmacovigilance | The science of detecting, assessing, understanding, and preventing adverse effects of medicines. |
-| Signal Detection | Identifying a statistical association between a drug and an adverse event warranting further investigation. |
-| PRR / ROR / EBGM | Statistical disproportionality metrics used to compare the proportion or odds of specific ADRs against background rates. |
-| MedDRA | Medical Dictionary for Regulatory Activities; standardized terminology classifying adverse events. |
-| Primary Suspect Drug | The specific drug the reporter believes caused the adverse event (`drugcharacterization = 1`). |
-| Serious Outcome | Death, hospitalization, life-threatening condition, disability, or congenital anomaly. |
-| Polypharmacy | The concurrent use of multiple medications by a patient, which exponentially increases the risk of ADRs. |
-| DuckDB | An in-process SQL OLAP database used to handle massive FAERS historical datasets out-of-core. |
+| :--- | :--- |
+| **ADR / ADE** | Adverse Drug Reaction (unintended harm from normal dose) / Adverse Drug Event (includes errors and overdoses). |
+| **FAERS** | FDA Adverse Event Reporting System; the primary database for tracking drug safety after a drug is approved. |
+| **Pharmacovigilance** | The science of tracking, understanding, and preventing negative side effects of medications. |
+| **Signal Detection** | Finding a statistical pattern that suggests a specific drug might be causing a specific side effect. |
+| **MedDRA** | The standardized medical dictionary used to categorize adverse events uniformly. |
+| **Primary Suspect Drug** | The specific medication that the reporter believes caused the negative reaction. |
+| **Serious Outcome** | A result that includes death, hospitalization, life-threatening conditions, or permanent disability. |
+| **Polypharmacy** | A patient taking multiple different medications at the same time, which heavily increases the risk of side effects. |
 
 **Domain Explanation:**
-This project sits at the intersection of public health informatics, regulatory science, and machine learning. Within pharmacovigilance, monitoring post-market drug safety via voluntary FDA reports relies on statistical disproportionality to flag abnormally frequent drug-event pairs at the population level. This project reframes that workflow. Instead of asking if a reaction is historically overrepresented, a predictive model calculates the immediate, individualized risk of a life-threatening outcome based on specific patient, drug, and reaction features.
-
+This project shifts pharmacovigilance from reactive to proactive. Traditionally, regulators look for historical spikes in specific drug side effects. This project instead calculates the immediate, individual risk of a severe outcome the moment a report is filed, using patient demographics and drug profiles to route the case for urgent human review.
 **Background Reading Folder:** [OneDrive Literature Repository](https://myuva-my.sharepoint.com/:f:/r/personal/mjy7nw_virginia_edu/Documents/3Y/3YS/DS%204320/proj1/background%20readings?csf=1&web=1&e=AA0LG1) 
 
 **Background Reading Table:**
@@ -51,7 +52,7 @@ This project sits at the intersection of public health informatics, regulatory s
 ## Data Creation
 
 > ### 🛠 Data Provenance & Reproducibility
-> All data is pulled directly from the **OpenFDA API** using `01_faers_bulk_download.py`. The pipeline is designed to be **reproducible**; running the ingestion scripts will refresh the local `faers_ml.duckdb` without duplicating records. All engineered artifacts are stored in the [UVA OneDrive Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgDpgQQ1-uZ8TbiHbMXPD7xaAX6MqHnvhya5nWgsXy54iFU?e=Uaq5f2) to ensure persistent access and auditability.
+> All data is pulled directly from the **OpenFDA API** using `01_faers_bulk_download.py`. The pipeline is designed to be **reproducible**; running the ingestion scripts will refresh the local `faers_ml.duckdb` without duplicating records. All engineered artifacts are stored in the [UVA OneDrive Directory](https://myuva-my.sharepoint.com/:f:/g/personal/mjy7nw_virginia_edu/IgDpgQQ1-uZ8TbiHbMXPD7xaAX6MqHnvhya5nWgsXy54iFU?e=Uaq5f2) to ensure persistent access and auditability. The data is downloaded it its raw nested JSON format, then flattened into relational tables using DuckDB SQL queries. The final modeling dataset is exported as Parquet files for efficient loading into the ML pipeline. 
 
 **Code Provenance Table:**
 | Script | Description | Link |
@@ -71,25 +72,30 @@ Spontaneous passive reporting systems face immense biases, notably drastic under
 **ER Diagram:**
 ![ER Diagram](./images/ER_Diagram.png)
 
-
 **Data Table List:**
 The resulting structural tables inside DuckDB, exported as Parquet format:
 | File Name | Description |
-|-----------|-------------|
-| `faers_reports.parquet` | Core administrative details and receive dates per event report. |
-| `faers_patients.parquet` | Normalized patient demographic profiles (age and sex). |
-| `faers_drugs.parquet` | Drugs listed within the reports, delineated by suspected versus concomitant role. |
-| `faers_reactions.parquet` | Specific adverse event outcomes coded in MedDRA Preferred Terms. |
-| `faers_outcomes.parquet` | Categorical indicators of severe event consequences (e.g., DEATH, HOSPITALIZATION). |
+| :--- | :--- |
+| `faers_reports.parquet` | Administrative report IDs and dates. |
+| `faers_patients.parquet` | Patient age and biological sex. |
+| `faers_drugs.parquet` | Medications taken, marked as suspect or concomitant. |
+| `faers_reactions.parquet` | Specific side effects experienced (MedDRA terms). |
+| `faers_outcomes.parquet` | Severe consequences mapped to reports (e.g., Death). |
 
-**Data Dictionary:**
-| Table | Feature | Description | Data Type | Example | Uncertainty / Missingness Notes |
-|-------|---------|-------------|-----------|---------|--------------------------------|
-| `reports` | `report_id` | Unique report string matching | VARCHAR | "1000452-1" | Negligible missingness. |
-| `reports` | `receive_date` | Date the report was filed | DATE | 2024-01-15 | High reliability. |
-| `patients` | `patient_age` | Patient age at the time of the event | FLOAT | 45.5 | High missingness; standard deviation of ~20 years. |
-| `patients` | `patient_sex` | Patient biological sex | VARCHAR | "1" | Moderate missingness. |
-| `drugs` | `drug_name` | The name or active ingredient | VARCHAR | "ASPIRIN" | Text noise exists; spelling variations present. |
-| `drugs` | `role_cod` | Role in the event (Primary Suspect / Concomitant) | VARCHAR | "PS" | Usually reliable if originated by healthcare staff. |
-| `reactions` | `pt` | Preferred Term detailing symptom | VARCHAR | "Nausea" | Highly standardized terminology, but dependent on reporter judgment. |
-| `outcomes` | `outcome_code` | Categorical outcome tag | VARCHAR | "DEATH" | Blank for non-serious events; biased toward complete reporting for fatal events. |
+| Table | Feature | Description | Data Type | Missingness & Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| `reports` | `report_id` | Unique FDA identification number. | VARCHAR | Primary key. Complete reliability. |
+| `reports` | `receive_date` | Date the FDA received the report. | DATE | Complete. High reliability. |
+| `reports` | `serious` | Indicator if the overall event was classified as serious. | VARCHAR | High reliability. Serves as a high-level filter. |
+| `reports` | `reporter_type` | Qualification of the person reporting (e.g., Physician, Consumer). | VARCHAR | Moderate missingness. Influences clinical accuracy. |
+| `reports` | `reporter_country` | Country where the adverse event occurred. | VARCHAR | Moderate missingness. |
+| `patients` | `report_id` | Foreign key linking the patient to their specific report. | VARCHAR | Complete. |
+| `patients` | `patient_sex` | Biological sex of the patient. | VARCHAR | Moderate missingness. |
+| `patients` | `patient_age` | Age of patient at the time of the event. | FLOAT | High missingness; frequently omitted by voluntary reporters. |
+| `drugs` | `report_id` | Foreign key linking the drug to the report. | VARCHAR | Complete. |
+| `drugs` | `drug_name` | Name or active ingredient of the medication taken. | VARCHAR | Spelling variations and generic/brand mixing exist. |
+| `drugs` | `role_cod` | Marks if the drug is the suspected cause (PS) or just present (C). | VARCHAR | High reliability. |
+| `reactions` | `report_id` | Foreign key linking the reaction to the report. | VARCHAR | Complete. |
+| `reactions` | `pt` | Standardized MedDRA term (Preferred Term) for the side effect. | VARCHAR | Standardized, but subject to the reporter's medical judgment. |
+| `outcomes` | `report_id` | Foreign key linking the outcome to the report. | VARCHAR | Complete. |
+| `outcomes` | `outcome_code` | Specific tag indicating a severe result (e.g., DEATH, HOSPITAL). | VARCHAR | Blank for non-serious events; biased toward fatal/severe cases. |

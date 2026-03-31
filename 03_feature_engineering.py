@@ -11,52 +11,33 @@ logging.basicConfig(
     handlers=[logging.FileHandler("logs/faers_pipeline.log"), logging.StreamHandler()]
 )
 
-# ---------------------------------------------------------------------------
+
 # HIGH-RISK DRUG REGISTRY
-# Sources: Pirmohamed et al. (2004), Sonawane et al. (2018),
-#          FAERS ML literature (Schreier 2024, Al-Azzawi 2023),
-#          and post-2014 FAERS dominant signal classes (DOACs, opioids).
-# ---------------------------------------------------------------------------
+# Binary FAERS feature flag grounded in Pirmohamed et al. (2004), Sonawane et al. (2018) and post-2016 CDC opioid crisis data
+# a positive flag indicates elevated prior probability of a serious or fatal outcome
+# refer to background readings for tables where information comes from
 
-# Pirmohamed et al. (2004) Table 4 — corrected and complete
-PIRMOHAMED_DRUGS = [
-    'ASPIRIN', 'DICLOFENAC', 'IBUPROFEN', 'ROFECOXIB',
-    'CELECOXIB', 'KETOPROFEN', 'MELOXICAM',
-    'WARFARIN',
-    'FUROSEMIDE', 'BUMETANIDE', 'BENDROFLUMETHIAZIDE',
-    'ENALAPRIL', 'RAMIPRIL', 'CAPTOPRIL',
-    'SPIRONOLACTONE', 'DIPYRIDAMOLE', 'LITHIUM',
-    'DIGOXIN', 'PREDNISOLONE',
-]
+HIGH_RISK_DRUGS = {
+    # --- FAERS Volume Anchors (Sonawane 2018) ---
+    'LENALIDOMIDE',   # Only drug in top 10 across all 3 outcome categories    # #3 disability outcomes; antidepressant class anchor
+    'ACETAMINOPHEN',  # #5 death (7,664 reports)
+    'METOCLOPRAMIDE', # #1 disability 
 
-# Sonawane et al. (2018) — top 10 across FAERS 2006-2014 serious outcome categories
-SONAWANE_DRUGS = [
-    'PAROXETINE', 'FLUOXETINE', 'SERTRALINE',
-    'ROFECOXIB', 'LENALIDOMIDE',
-]
+    # --- Hospital ADR Admission Anchors (Pirmohamed 2004) ---
+    'ASPIRIN',        # 218 cases; #1 drug in ADR admissions and deaths
+    'WARFARIN',       # 129 cases; cross-study anticoagulant anchor
+    'FUROSEMIDE',     # 128 cases; diuretic class anchor
+    'DICLOFENAC',     # 52 cases; NSAID anchor (non-aspirin ADR profile)
+    'DIGOXIN',        # 36 cases; narrow therapeutic index; toxicity admissions
+    'IBUPROFEN',      # 34 cases; highest-volume OTC NSAID in US FAERS
 
-# DOACs overtook warfarin in US prescriptions and FAERS volume by ~2017;
-# excluding them while including warfarin would produce an inconsistent anticoagulant class.
-DOAC_DRUGS = [
-    'APIXABAN', 'RIVAROXABAN', 'DABIGATRAN',
-]
-
-# Opioid crisis dominates 2016-2025 FAERS serious outcome and death categories.
-OPIOID_DRUGS = [
-    'FENTANYL', 'OXYCODONE', 'HYDROCODONE', 'MORPHINE', 'TRAMADOL',
-]
-
-# High-volume FAERS serious outcome agents from pharmacovigilance ML literature
-# and FDA REMS/narrow-index classifications.
-FAERS_SIGNAL_DRUGS = [
-    'INSULIN', 'METHOTREXATE', 'CLOZAPINE',
-    'VALPROATE', 'AMIODARONE', 'ADALIMUMAB',
-]
-
-HIGH_RISK_DRUGS = set(
-    PIRMOHAMED_DRUGS + SONAWANE_DRUGS +
-    DOAC_DRUGS + OPIOID_DRUGS + FAERS_SIGNAL_DRUGS
-)
+    # --- Opioids (Post-2016 FAERS Death-Outcome Signal) ---
+    'FENTANYL',       # Pirmohamed opiates group (5 cases); #1 opioid death signal
+    'MORPHINE',       # Pirmohamed opiates group (20 cases)
+    'TRAMADOL',       # Pirmohamed opiates group (8 cases)
+    'OXYCODONE',      # US opioid crisis dominant FAERS death reporter
+    'HYDROCODONE',    # US opioid crisis dominant FAERS death reporter
+}
 
 # DuckDB REGEXP_MATCHES requires a pipe-delimited alternation pattern.
 # Substring logic is intentional: FAERS drug_name is free-text and stores
