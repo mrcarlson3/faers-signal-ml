@@ -82,6 +82,7 @@ The resulting structural tables inside DuckDB, exported as Parquet format:
 | `faers_reactions.parquet` | Specific side effects experienced (MedDRA terms). |
 | `faers_outcomes.parquet` | Severe consequences mapped to reports (e.g., Death). |
 
+**Data Dictionary:**
 | Table | Feature | Description | Data Type | Missingness & Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | `reports` | `report_id` | Unique FDA identification number. | VARCHAR | Primary key. Complete reliability. |
