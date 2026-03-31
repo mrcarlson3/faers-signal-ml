@@ -83,20 +83,20 @@ The resulting structural tables inside DuckDB, exported as Parquet format:
 | `faers_outcomes.parquet` | Severe consequences mapped to reports (e.g., Death). |
 
 **Data Dictionary:**
-| Table | Feature | Description | Data Type | Missingness & Notes |
-| :--- | :--- | :--- | :--- | :--- |
-| `reports` | `report_id` | Unique FDA identification number. | VARCHAR | Primary key. Complete reliability. |
-| `reports` | `receive_date` | Date the FDA received the report. | DATE | Complete. High reliability. |
-| `reports` | `serious` | Indicator if the overall event was classified as serious. | VARCHAR | High reliability. Serves as a high-level filter. |
-| `reports` | `reporter_type` | Qualification of the person reporting (e.g., Physician, Consumer). | VARCHAR | Moderate missingness. Influences clinical accuracy. |
-| `reports` | `reporter_country` | Country where the adverse event occurred. | VARCHAR | Moderate missingness. |
-| `patients` | `report_id` | Foreign key linking the patient to their specific report. | VARCHAR | Complete. |
-| `patients` | `patient_sex` | Biological sex of the patient. | VARCHAR | Moderate missingness. |
-| `patients` | `patient_age` | Age of patient at the time of the event. | FLOAT | High missingness; frequently omitted by voluntary reporters. |
-| `drugs` | `report_id` | Foreign key linking the drug to the report. | VARCHAR | Complete. |
-| `drugs` | `drug_name` | Name or active ingredient of the medication taken. | VARCHAR | Spelling variations and generic/brand mixing exist. |
-| `drugs` | `role_cod` | Marks if the drug is the suspected cause (PS) or just present (C). | VARCHAR | High reliability. |
-| `reactions` | `report_id` | Foreign key linking the reaction to the report. | VARCHAR | Complete. |
-| `reactions` | `pt` | Standardized MedDRA term (Preferred Term) for the side effect. | VARCHAR | Standardized, but subject to the reporter's medical judgment. |
-| `outcomes` | `report_id` | Foreign key linking the outcome to the report. | VARCHAR | Complete. |
-| `outcomes` | `outcome_code` | Specific tag indicating a severe result (e.g., DEATH, HOSPITAL). | VARCHAR | Blank for non-serious events; biased toward fatal/severe cases. |
+| Name | Data Type | Description | Example | Missingness | Uncertainty (Numerical Features) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `reports.report_id` | VARCHAR | Unique FDA identification number. | `10012345` | Complete (expected 0%). | N/A (non-numerical). |
+| `reports.receive_date` | DATE | Date the FDA received the report. | `2023-11-18` | Complete (expected 0%). | N/A (non-numerical). |
+| `reports.serious` | VARCHAR | Indicator if the overall event was classified as serious. | `1` | Low missingness. | N/A (non-numerical). |
+| `reports.reporter_type` | VARCHAR | Qualification of the person reporting (e.g., Physician, Consumer). | `Physician` | Moderate missingness. | N/A (non-numerical). |
+| `reports.reporter_country` | VARCHAR | Country where the adverse event occurred. | `US` | Moderate missingness. | N/A (non-numerical). |
+| `patients.report_id` | VARCHAR | Foreign key linking the patient to their specific report. | `10012345` | Complete (expected 0%). | N/A (non-numerical). |
+| `patients.patient_sex` | VARCHAR | Biological sex of the patient. | `M` | Moderate missingness. | N/A (non-numerical). |
+| `patients.patient_age` | FLOAT | Age of patient at the time of the event (years). | `67.0` | High missingness. | Approximately +/-1 year from conversion and age rounding in source reports; high missingness increases uncertainty. |
+| `drugs.report_id` | VARCHAR | Foreign key linking the drug to the report. | `10012345` | Complete (expected 0%). | N/A (non-numerical). |
+| `drugs.drug_name` | VARCHAR | Name or active ingredient of the medication taken. | `IBUPROFEN` | Low missingness; value normalization needed. | N/A (non-numerical). |
+| `drugs.role_cod` | VARCHAR | Marks if the drug is the suspected cause (PS) or just present (C). | `PS` | Low missingness. | N/A (non-numerical). |
+| `reactions.report_id` | VARCHAR | Foreign key linking the reaction to the report. | `10012345` | Complete (expected 0%). | N/A (non-numerical). |
+| `reactions.pt` | VARCHAR | Standardized MedDRA term (Preferred Term) for the side effect. | `NAUSEA` | Low missingness. | N/A (non-numerical). |
+| `outcomes.report_id` | VARCHAR | Foreign key linking the outcome to the report. | `10012345` | Complete (expected 0%). | N/A (non-numerical). |
+| `outcomes.outcome_code` | VARCHAR | Specific tag indicating a severe result (e.g., death, hospitalization). | `DE` | Structurally sparse for non-serious events. | N/A (non-numerical). |
