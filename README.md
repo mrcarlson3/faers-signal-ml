@@ -20,7 +20,7 @@ This project provides an automated data pipeline to process the FDA Adverse Even
 
 **Motivation for the Project:** The FDA receives millions of voluntary adverse event reports over a decade, far exceeding the capacity of human regulatory analysts to review them in real-time. This severe bottleneck means that fatal drug-drug interactions or life-threatening geriatric responses can remain buried under thousands of minor, non-serious complaints like mild nausea. The motivation behind this project is to protect public health by drastically reducing the time-to-intervention; an automated triage engine ensures that regulatory leads can immediately focus their limited resources on the most critical, high-probability emergencies the moment they enter the system.
 
-**Press Release:** ** [ML Triage Revolutionizes FDA Drug Safety Monitoring](press_release.md)**
+**Press Release:** [ML Triage Revolutionizes FDA Drug Safety Monitoring](press_release.md)
 
 ---
 ## Domain Exposition
